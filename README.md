@@ -1,138 +1,327 @@
-# OpenSource Framework
+# @opensourceframework/react-a11y-utils
 
-> Maintained forks of abandoned npm packages
+[![npm version](https://badge.fury.io/js/@opensourceframework%2Freact-a11y-utils.svg)](https://badge.fury.io/js/@opensourceframework%2Freact-a11y-utils)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[![License](https://img.shields.io/github/license/opensourceframework/opensourceframework.svg)](./LICENSE)
-[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+React accessibility utility functions and hooks for building accessible user interfaces. Provides a comprehensive set of ARIA prop factories and CSS utilities to help you build WCAG-compliant React applications.
 
-## About
+## Features
 
-OpenSource Framework is a monorepo dedicated to maintaining forks of abandoned npm packages. We ensure these valuable tools continue to receive security updates, bug fixes, and compatibility improvements.
+- 🎯 **ARIA Prop Factories** - Functions to generate correct ARIA props for common patterns
+- 👁️ **Screen Reader Utilities** - CSS styles for visually hidden but accessible content
+- 🔧 **TypeScript Support** - Full type definitions for all ARIA attributes
+- 🪶 **Zero Dependencies** - No external dependencies
+- ♿ **WCAG Compliant** - Built following accessibility best practices
 
-## Available Packages
+## Installation
 
-| Package | Original | Status | Description |
-|---------|----------|--------|-------------|
-| [@opensourceframework/next-csrf](./packages/next-csrf) | [next-csrf](https://www.npmjs.com/package/next-csrf) | ![Maintenance](https://img.shields.io/maintenance/yes/2026.svg) | CSRF protection for Next.js |
-| [@opensourceframework/next-images](./packages/next-images) | [next-images](https://www.npmjs.com/package/next-images) | ![Maintenance](https://img.shields.io/maintenance/yes/2026.svg) | Image optimization for Next.js |
-| [@opensourceframework/critters](./packages/critters) | [critters](https://www.npmjs.com/package/critters) | ![Maintenance](https://img.shields.io/maintenance/yes/2026.svg) | CSS inlining for SSR |
-
-## Why OpenSource Framework?
-
-Many npm packages become abandoned over time, leaving projects vulnerable to:
-- **Security vulnerabilities** - No security patches for discovered vulnerabilities
-- **Compatibility issues** - No updates for new Node.js or framework versions
-- **Bug persistence** - Known bugs remain unfixed
-- **TypeScript gaps** - Missing or outdated type definitions
-
-OpenSource Framework solves these problems by:
-- **Active maintenance** - Regular updates and security patches
-- **Community-driven** - Open to contributions and feedback
-- **Transparency** - Clear provenance and changelogs for all packages
-- **Quality standards** - Enforced code standards, testing, and CI/CD
+```bash
+npm install @opensourceframework/react-a11y-utils
+# or
+yarn add @opensourceframework/react-a11y-utils
+# or
+pnpm add @opensourceframework/react-a11y-utils
+```
 
 ## Quick Start
 
-### Installation
+```tsx
+import {
+  srOnly,
+  createDisclosureProps,
+  createLiveRegion,
+  statusMessageProps,
+} from '@opensourceframework/react-a11y-utils';
 
-```bash
-# Using npm
-npm install @opensourceframework/[package-name]
+function Accordion({ title, children, isOpen, onToggle }) {
+  return (
+    <div>
+      <button
+        {...createDisclosureProps(isOpen, 'panel-1')}
+        onClick={onToggle}
+      >
+        {title}
+      </button>
+      <div id="panel-1" hidden={!isOpen}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
-# Using yarn
-yarn add @opensourceframework/[package-name]
+function StatusMessage({ message }) {
+  return (
+    <div {...statusMessageProps}>
+      {message}
+    </div>
+  );
+}
 
-# Using pnpm
-pnpm add @opensourceframework/[package-name]
+// Screen reader only text
+function SkipLink() {
+  return (
+    <a href="#main-content" style={srOnly} tabIndex={0}>
+      Skip to main content
+    </a>
+  );
+}
 ```
 
-### Migration from Original Packages
+## API Reference
 
-Simply update your imports:
+### Screen Reader Utilities
 
-```diff
-- import { something } from 'original-package';
-+ import { something } from '@opensourceframework/original-package';
+#### `srOnly`
+
+CSS styles for screen-reader-only content. Elements are visually hidden but accessible to screen readers.
+
+```tsx
+<span style={srOnly}>This text is only visible to screen readers</span>
+```
+
+#### `srOnlyFocusable`
+
+CSS styles for elements that should become visible when focused (e.g., skip links).
+
+```tsx
+<a href="#main" style={srOnlyFocusable}>Skip to main content</a>
+```
+
+### Pre-built Props
+
+#### `decorative`
+
+Props for decorative elements that should be hidden from screen readers.
+
+```tsx
+<img src="decoration.png" alt="" {...decorative} />
+```
+
+#### `disabledProps`
+
+Props for disabled interactive elements.
+
+```tsx
+<button {...disabledProps}>Disabled Button</button>
+```
+
+#### `statusMessageProps`
+
+Props for status messages (polite announcements).
+
+```tsx
+<div {...statusMessageProps}>Changes saved successfully</div>
+```
+
+#### `alertMessageProps`
+
+Props for alert messages (assertive announcements).
+
+```tsx
+<div {...alertMessageProps}>Error: Please correct the form</div>
+```
+
+### Factory Functions
+
+#### `createLiveRegion(options)`
+
+Creates props for live regions that announce changes to screen readers.
+
+```tsx
+<div {...createLiveRegion({ atomic: true, live: 'polite' })}>
+  {message}
+</div>
+```
+
+**Options:**
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `atomic` | `boolean` | `false` | Announce entire region or just changes |
+| `relevant` | `'additions' \| 'removals' \| 'text' \| 'all'` | `'additions'` | What changes to announce |
+| `busy` | `boolean` | `false` | Whether region is being updated |
+| `live` | `'polite' \| 'assertive'` | `'polite'` | How assertive the announcement |
+
+#### `createSkipLinkProps(targetId)`
+
+Creates props for skip links.
+
+```tsx
+<a {...createSkipLinkProps('main-content')}>Skip to main content</a>
+<main id="main-content">...</main>
+```
+
+#### `createDisclosureProps(expanded, controlsId)`
+
+Creates props for elements that expand/collapse content.
+
+```tsx
+<button {...createDisclosureProps(isOpen, 'panel-id')} onClick={toggle}>
+  Toggle
+</button>
+```
+
+#### `createPressedProps(pressed)`
+
+Creates props for toggle buttons with pressed state.
+
+```tsx
+<button {...createPressedProps(isActive)} onClick={toggle}>
+  Toggle Feature
+</button>
+```
+
+#### `createSelectedProps(selected)`
+
+Creates props for elements with selected state.
+
+```tsx
+<li {...createSelectedProps(isSelected)} role="option">
+  Option 1
+</li>
+```
+
+#### `createCheckedProps(checked)`
+
+Creates props for elements with checked state.
+
+```tsx
+<div {...createCheckedProps(checked)} role="checkbox" tabIndex={0}>
+  {checked ? '✓' : ''}
+</div>
+```
+
+#### `createDialogTriggerProps(dialogId, isOpen)`
+
+Creates props for dialog/modal triggers.
+
+```tsx
+<button {...createDialogTriggerProps('my-dialog', isOpen)}>
+  Open Dialog
+</button>
+```
+
+#### `createFormFieldProps(required, invalid?)`
+
+Creates props for form fields.
+
+```tsx
+<input {...createFormFieldProps(true, hasError)} />
+```
+
+#### `createDescribedByProps(describedById)`
+
+Creates props for elements described by another element.
+
+```tsx
+<input {...createDescribedByProps('error-message')} />
+<span id="error-message">This field is required</span>
+```
+
+#### `createLabelledByProps(labelledById)`
+
+Creates props for elements labeled by another element.
+
+```tsx
+<div {...createLabelledByProps('panel-title')} role="region">
+  <h2 id="panel-title">Panel Title</h2>
+  Content
+</div>
+```
+
+#### `mergeA11yProps(...props)`
+
+Combines multiple accessibility props objects.
+
+```tsx
+<div {...mergeA11yProps(statusMessageProps, { 'aria-label': 'Status' })}>
+  {message}
+</div>
+```
+
+## Usage Examples
+
+### Accordion Component
+
+```tsx
+import { createDisclosureProps } from '@opensourceframework/react-a11y-utils';
+
+function AccordionItem({ id, title, children, isExpanded, onToggle }) {
+  const panelId = `panel-${id}`;
+  
+  return (
+    <div className="accordion-item">
+      <h3>
+        <button
+          {...createDisclosureProps(isExpanded, panelId)}
+          onClick={onToggle}
+        >
+          {title}
+        </button>
+      </h3>
+      <div
+        id={panelId}
+        role="region"
+        hidden={!isExpanded}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+```
+
+### Checkbox Component
+
+```tsx
+import { createCheckedProps } from '@opensourceframework/react-a11y-utils';
+
+function Checkbox({ checked, onChange, children }) {
+  return (
+    <div
+      {...createCheckedProps(checked)}
+      role="checkbox"
+      tabIndex={0}
+      onClick={() => onChange(!checked)}
+      onKeyDown={(e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          onChange(!checked);
+        }
+      }}
+    >
+      {checked ? '✓' : ''}
+      {children}
+    </div>
+  );
+}
+```
+
+### Toast Notifications
+
+```tsx
+import { createLiveRegion, alertMessageProps } from '@opensourceframework/react-a11y-utils';
+
+function Toast({ message, type = 'info' }) {
+  const props = type === 'error' 
+    ? alertMessageProps 
+    : createLiveRegion({ live: 'polite' });
+
+  return (
+    <div {...props} className={`toast toast-${type}`}>
+      {message}
+    </div>
+  );
+}
 ```
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
-
-### Ways to Contribute
-
-- **Report bugs** - Open an issue with detailed reproduction steps
-- **Suggest features** - Share your ideas in discussions or issues
-- **Submit PRs** - Fix bugs, add features, or improve documentation
-- **Review code** - Help maintain code quality
-- **Spread the word** - Star the repo and share with others
-
-## Development
-
-### Prerequisites
-
-- Node.js 20+
-- pnpm 9+
-
-### Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/opensourceframework/opensourceframework.git
-cd opensourceframework
-
-# Install dependencies
-pnpm install
-
-# Build all packages
-pnpm build
-
-# Run tests
-pnpm test
-
-# Lint code
-pnpm lint
-```
-
-### Project Structure
-
-```
-opensourceframework/
-â packages/           # Forked packages
-â  â next-csrf/      # CSRF protection for Next.js
-â  â next-images/    # Image optimization for Next.js
-â  â critters/       # CSS inlining for SSR
-â tools/              # Shared tooling configurations
-â .github/            # GitHub templates and workflows
-â plans/             # Architecture and planning documents
-```
-
-## Sponsoring
-
-Help sustain this project by becoming a sponsor:
-
-- [GitHub Sponsors](https://github.com/sponsors/opensourceframework)
-- [Open Collective](https://opencollective.com/opensourceframework)
-
-Sponsors get:
-- Recognition in README and releases
-- Priority issue triage
-- Input on package priorities
-
-## Security
-
-We take security seriously. Please see our [Security Policy](./SECURITY.md) for details on reporting vulnerabilities.
+See [Contributing Guide](../../CONTRIBUTING.md) for details.
 
 ## License
 
-This repository is licensed under the [MIT License](./LICENSE). Individual packages may retain their original licenses if different.
+MIT © OpenSource Framework Contributors
 
-## Acknowledgments
-
-- Original package authors for their valuable contributions
-- All contributors who help maintain these packages
-- Our sponsors for financial support
 
 ---
 
-Made with ð by the OpenSource Framework community\n\n---\n\nMaintained by @opensourceframework in the [monorepo](https://github.com/riceharvest/opensourceframework).
+Maintained by @opensourceframework in the [monorepo](https://github.com/riceharvest/opensourceframework).

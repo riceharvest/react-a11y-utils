@@ -135,4 +135,4 @@ This repository is licensed under the [MIT License](./LICENSE). Individual packa
 
 ---
 
-Made with ð by the OpenSource Framework community
+Made with ð by the OpenSource Framework community\n\n---\n\nMaintained by @opensourceframework in the [monorepo](https://github.com/riceharvest/opensourceframework).
